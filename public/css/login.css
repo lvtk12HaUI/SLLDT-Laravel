@@ -1,0 +1,150 @@
+
+*{
+	margin: 0;
+	padding: 0;
+	border:  0;
+	box-sizing: border-box;
+}
+
+body{
+	font-family: sans-serif;
+	background-image: url("../img/login-bg.jpg");
+	background-size: cover;
+}
+
+.navbar{
+	width: 100%;
+	position: relative;
+	background: #f0d46d;
+	font-family: sans-serif;
+	background-image: url("../img/pattern-bg.png");
+	background-repeat: no-repeat;
+	z-index: 999;
+}
+
+
+.navbar .title{
+	text-align: center;
+	font-size: 24px;
+	font-weight: bold;
+	color: #34495e;
+	padding-top: 20px;
+}
+
+.navbar .title:last-child{
+	padding-top: 0;
+	padding-bottom: 10px;
+}
+
+
+.navbar .title:first-child{
+	font-size: 40px;
+	margin-bottom: 10px;
+}
+
+.messErr{
+	position: relative;
+	background: #ff3f34;
+	font-family: sans-serif;
+	font-size: 16px;
+	width:400px;
+	height:40px;
+	line-height: 40px;
+	text-align: center;
+	margin:0 auto;
+	margin-top:20px;
+	border-radius:5px;
+	color: #fff;
+
+}
+
+.main-wrapper{
+	min-height: 500px;
+	width: 100%;
+	height: 100%;
+	margin: auto;
+	position: relative;
+	top: 0;
+}
+
+.login-box{
+	width: 500px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.login-form{
+	display: block;
+	width: 80%;
+	height: 100%;
+	position: relative;
+	top: 0;
+	left: 50px;
+	box-shadow: 5px 5px 5px 5px #fff;
+}
+
+.login-form .title-form{
+	text-align: center;
+	font-size: 28px;
+	font-weight: bold;
+	padding: 20px;
+	box-sizing: border-box;
+	overflow: hidden;
+	color: #2c3e50;
+}
+
+
+.login-form .form-control{
+	display: block;
+	width: 80%;
+	height: 50px;
+	margin: 0 auto;
+	margin-top: 20px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	padding-left:20px;
+	font-size: 14px;
+}
+
+.login-form .btn-login{
+	width: 60%;
+	padding: 0;
+	background: #67ae55;
+	color: #fff;
+	font-size: 16px;
+	font-weight: bold;
+	border: 1px solid #67ae55;
+	cursor: pointer;
+}
+
+.login-form .form-control:last-child{
+	text-decoration: none;
+	line-height: 50px;
+	text-align: center;
+	display: block;
+	width: 40%;
+	padding: 0;
+	margin-bottom:20px;
+	background: #ea4335;
+	color: #fff;
+	font-size: 16px;
+	font-weight: bold;
+	border: 1px solid #ea4335;
+	cursor: pointer;
+}
+
+.login-form .mess-err{
+	height:20xp;
+	line-height:20px;
+	padding:0;
+	margin:0;
+	font-size:14px;
+	color:red;
+}
+
+
+
+
+
