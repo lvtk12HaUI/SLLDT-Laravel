@@ -12,7 +12,7 @@ class InfoStudents extends Model
     public function checkAddInfoStudents($student_number){
         $result = [];
         $data = InfoStudents::select('InfoStudents.student_number','InfoStudents.student_name','InfoStudents.birthday','InfoStudents.email',
-        'InfoStudents.phone','InfoStudents.gender','InfoStudents.class','InfoStudents.address','classes.class_name')
+        'InfoStudents.phone','InfoStudents.gender','InfoStudents.class','InfoStudents.address','InfoStudents.conduct','classes.class_name')
                         ->join('classes','classes.id','=','InfoStudents.class') 
                         ->where([
                             'student_number' => $student_number,
@@ -83,9 +83,23 @@ class InfoStudents extends Model
     public function listInfoStudentsByClass($class){
         $result = [];
         $data = InfoStudents::select('InfoStudents.student_number','InfoStudents.student_name','InfoStudents.birthday','InfoStudents.email',
-                                'InfoStudents.phone','InfoStudents.gender','InfoStudents.class','InfoStudents.address','classes.class_name')
+                                'InfoStudents.phone','InfoStudents.gender','InfoStudents.class','InfoStudents.address', 'InfoStudents.conduct','classes.class_name')
                         ->join('classes','classes.id','=','InfoStudents.class')
                         ->where('classes.class_name',$class)
+                        ->get();
+        if($data){
+            $result = $data->toArray();
+        }
+        return $result;
+
+    }
+
+    public function listInfoStudentsByClass2($class){
+        $result = [];
+        $data = InfoStudents::select('InfoStudents.student_number','InfoStudents.student_name','InfoStudents.birthday','InfoStudents.email',
+                                'InfoStudents.phone','InfoStudents.gender','InfoStudents.class','InfoStudents.address','classes.class_name')
+                        ->join('classes','classes.id','=','InfoStudents.class')
+                        ->where('classes.id',$class)
                         ->get();
         if($data){
             $result = $data->toArray();
@@ -177,6 +191,13 @@ class InfoStudents extends Model
         return true;
     }
 
-    
+    public function infoClass()
+    {
+        return $this->belongsTo('App\Models\Classes', 'class', 'id');
+    }
 
+    public function pointAVG()
+    {
+        return $this->hasMany('App\Models\Point_AVG', 'student_number', 'student_number');
+    }
 }

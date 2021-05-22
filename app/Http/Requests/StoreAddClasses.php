@@ -24,7 +24,7 @@ class StoreAddClasses extends FormRequest
     public function rules()
     {
         return [
-            'class_name' => 'required',
+            'class_name' => 'required|max:10',
             'class_id' => 'required',
             'room_id' => 'required'
         ];
@@ -33,6 +33,7 @@ class StoreAddClasses extends FormRequest
     public function messages(){
         return [
             'class_name.required' => 'Tên lớp học không được để trống',
+            'class_name.max' => 'Tên lớp học không được vượt quá 10 ký tự',
             'class_id.required' => 'Khối học không được để trống',
             'room_id.required' => 'Phòng học không được để trống'
         ];

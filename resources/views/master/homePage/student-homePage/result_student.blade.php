@@ -73,6 +73,18 @@
                                             </td>
                                         </tr>
                                         @endforeach
+                                        <tr style="background:none;" class="font-weight-bold">
+                                            <td style='border: 1px solid;'  class="text-right pr-5" colspan="5">Điểm tổng kết</td>
+                                            <td style='border: 1px solid;' class="text-left pl-5" colspan="2">{{ number_format($infoPoint->point_avg,1) }}</td>
+                                        </tr>
+                                        <tr style="background:none;" class="font-weight-bold">
+                                            <td style='border: 1px solid;'  class="text-right pr-5" colspan="5">Học lực</td>
+                                            <td style='border: 1px solid;' class="text-left pl-5" colspan="2">{{$infoPoint->hocLuc}}</td>
+                                        </tr>
+                                        <tr style="background:none;" class="font-weight-bold">
+                                            <td style='border: 1px solid;' class="text-right pr-5" colspan="5">Hạnh kiểm</td>
+                                            <td style='border: 1px solid;' class="text-left pl-5" colspan="2">{{$infoStudent['conduct']}}</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </td>

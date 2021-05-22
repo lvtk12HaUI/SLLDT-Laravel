@@ -53,11 +53,16 @@
                                         <span>Thời khóa biểu</span>
 
                                     </div>
-                                    <div class="item-col item-col-header width">
+                                    <div class="item-col item-col-header">
+
+                                        <span>Bảng điểm tổng kết</span>
+
+                                    </div>
+                                    {{-- <div class="item-col item-col-header width">
 
                                             <span>Xóa</span>
             
-                                    </div>
+                                    </div> --}}
                                 </div>
                             </li>
                             @foreach($infoClasses as $key => $item)
@@ -65,15 +70,17 @@
                                 <div class="item-row">
                                     <div class="item-col">{{ $key + 1 }}</div>
 
-                                    <div class="item-col">{{ $item['class_name'] }}</div>
+                                    <div class="item-col"><a href="{{ route('admin.edit_class',$item['id']) }}" class="text-decoration-none">{{ $item['class_name'] }}</a></div>
 
                                     <div class="item-col">{{ $item['room_name'] }}</div>
 
-                                    <div class="item-col"><a href="{{ route('admin.listStudentsOfClass',$item['class_name']) }}" class="btn btn-success-outline">Xem</a></div>
+                                    <div class="item-col"><a href="{{ route('admin.listStudentsOfClass',$item['id']) }}" class="btn btn-success-outline">Xem</a></div>
 
                                     <div class="item-col"><a href="{{ route('admin.tkb_of_class',$item['class_name']) }}" class="btn btn-success-outline">Xem</a></div>
 
-                                    <div class="item-col width"><a onclick="return del_class('{{ $item['class_name'] }}')" href="{{ route('admin.handleDelClass',$item['id']) }}" class="btn btn-danger-outline">Xóa</a></div>
+                                    <div class="item-col"><a href="{{ route('admin.result_summary',$item['id']) }}" class="btn btn-success-outline">Xem</a></div>
+
+                                    {{-- <div class="item-col width"><a onclick="return del_class('{{ $item['class_name'] }}')" href="{{ route('admin.handleDelClass',$item['id']) }}" class="btn btn-danger-outline">Xóa</a></div> --}}
                                     
                                 </div>
                             </li>

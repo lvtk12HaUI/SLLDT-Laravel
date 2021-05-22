@@ -20,6 +20,7 @@
                                 <div class="header-block">
                                     <h3 class="title"> Danh sách giáo viên </h3>
                                     <a href="{{ route('admin.add_teachers') }}" class="btn btn-primary btn-sm"> Thêm </a>
+                                    <a href="{{ route('admin.teachersExport')}}" class="btn btn-primary btn-sm"> Xuất file excel danh sách giáo viên </a>
                                 </div>
                                 <div class="header-block pull-right">
                                     <label class="search">

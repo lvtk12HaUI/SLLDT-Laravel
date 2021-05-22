@@ -5,6 +5,11 @@
         <section class="section">
             <div class="row sameheight-container">
                 <div class="col-xl-12">
+                    @if(session('notification'))
+                        <div class="alert alert-success" role="alert">
+                            <strong>{{ session('notification') }}</strong>
+                        </div>
+                    @endif
                     <div class="card sameheight-item items" data-exclude="xs,sm,lg">
                         <div class="card-header bordered">
                             <div class="header-block">
@@ -42,6 +47,16 @@
                                         <span>Thời khóa biểu</span>
 
                                     </div>
+                                    <div class="item-col item-col-header width-2">
+
+                                        <span>Điểm</span>
+
+                                    </div>
+                                    <div class="item-col item-col-header width-2">
+
+                                        <span>Hạnh kiểm</span>
+
+                                    </div>
                                 </div>
                             </li>
                             @foreach($infoClass as $key => $item)
@@ -53,9 +68,13 @@
 
                                     <div class="item-col">{{ $item['room_name'] }}</div>
 
-                                <div class="item-col"><a href="{{ route('teacher.listStudentsOfClass',$item['class_name']) }}" class="btn btn-success-outline">Xem</a></div>
+                                    <div class="item-col"><a href="{{ route('teacher.listStudentsOfClass',$item['id']) }}" class="btn btn-success-outline">Xem</a></div>
 
                                     <div class="item-col width-2"><a href="{{ route('teacher.tkb_of_class',$item['class_name']) }}" class="btn btn-success-outline">Xem</a></div>
+
+                                    <div class="item-col width-2"><a href="{{ route('teacher.add_multi_point',$item['class_name']) }}" class="btn btn-success-outline">Thêm</a></div>
+
+                                    <div class="item-col width-2"><a href="{{ route('teacher.add_multi_conduct',$item['class_name']) }}" class="btn btn-success-outline">Chỉnh sửa</a></div>
                                 </div>
                             </li>
                             @endforeach

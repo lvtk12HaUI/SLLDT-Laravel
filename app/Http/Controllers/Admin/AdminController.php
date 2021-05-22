@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\{StorePostInfoStudnets,StorePostInfoTeachers,StoreAddTKBTeachers,StoreAddRooms,StoreAddClasses}; 
+use App\Http\Requests\{StorePostInfoStudnets,StorePostInfoTeachers,StoreAddTKBTeachers,StoreAddRooms,StoreAddClasses, StoreAddSubject}; 
 use App\Models\{Accounts,InfoStudents,Classes,InfoTeachers,Subjects,Tkbofteachers,Weekdays,Tiethoc,Rooms,PointOfStudent,TypeOfPoint,Point_AVG};
 use Illuminate\Support\Facades\DB;
+use App\Exports\StudentsExport;
+use App\Exports\TeachersExport;
+use App\Exports\ResultSummaryExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class AdminController extends Controller
@@ -64,6 +68,64 @@ class AdminController extends Controller
             $data['typeOfPoint'] = $type->getAllData();
             $data['point'] = $point->getPointByStudent($student_number);
             $data['pointAVG'] = $avg->getPointByStudent($student_number);
+            $infoPoint = InfoStudents::where('student_number', $student_number)->first();
+            $sumPoint = 0;
+            foreach ($infoPoint->pointAVG as $point) {
+                $sumPoint += $point->point_avg;
+            }
+            $pointAVG = $sumPoint/count($infoPoint->pointAVG); 
+            $infoPoint->point_avg = $pointAVG; 
+            $hocLuc = "";
+            if ($pointAVG >= Point_AVG::LOAI_GIOI) {
+                foreach ($infoPoint->pointAVG as $point) {
+                    if($point->point_avg <= 6.5){
+                        $hocLuc = "Khá";
+                        break;
+                    }
+                    if((strtoLower($point->name) == 'toán học' || strtoLower($point->name) == 'ngữ văn') && $val->pointAVG >= Point_AVG::LOAI_GIOI){
+                        $hocLuc = "Giỏi";
+                        break;
+                    }
+                }
+            }
+            else if ($pointAVG >= Point_AVG::LOAI_KHA) {
+                foreach ($infoPoint->pointAVG as $point) {
+                    if($point->point_avg <= 5){
+                        $hocLuc = "Trung bình";
+                        break;
+                    }
+                    if((strtoLower($point->name) == 'toán học' || strtoLower($point->name) == 'ngữ văn') && $val->pointAVG >= Point_AVG::LOAI_KHA){
+                        $hocLuc = "Khá";
+                        break;
+                    }
+                }
+            }
+            else if ($pointAVG >= Point_AVG::LOAI_TRUNG_BINH) {
+                foreach ($infoPoint->pointAVG as $point) {
+                    if($point->point_avg <= 3.5){
+                        $hocLuc = "Kém";
+                        break;
+                    }
+                    if((strtoLower($point->name) == 'toán học' || strtoLower($point->name) == 'ngữ văn') && $val->pointAVG >= Point_AVG::LOAI_TRUNG_BINH){
+                        $hocLuc = "Trung bình";
+                        break;
+                    }
+                }
+            }
+            else if ($pointAVG >= Point_AVG::LOAI_YEU) {
+                foreach ($infoPoint->pointAVG as $point) {
+                    if($point->point_avg <= 2.5){
+                        $hocLuc = "Kém";
+                        break;
+                    }
+                    $hocLuc = "Yếu";
+                }
+            }
+            else{
+                $hocLuc = "Kém"; 
+            }
+            $infoPoint->hocLuc = $hocLuc; 
+            $data['infoPoint'] = $infoPoint;
             return view('master.homePage.admin-homePage.result_students',$data);
         }
         else{
@@ -135,6 +197,27 @@ class AdminController extends Controller
         }
     }
 
+     //view edit tkb teachers
+     public function viewEditTKBTeachers($id, InfoTeachers $infoTeachers, Classes $class, Weekdays $day, Tiethoc $tiet){
+        $infoTKB = Tkbofteachers::findOrFail($id);
+        $infoTeacher = $infoTeachers->getInfoTeacher($infoTKB->teacher_number);
+        $classes = $class->getAllDataClasses();
+        $weekdays = $day->getAllDataWeekdays();
+        $tiethoc = $tiet->getAllDataTietHoc();
+        return view('master.homePage.admin-homePage.edit_tkb_teacher', compact('infoTKB', 'infoTeacher', 'classes', 'weekdays', 'tiethoc'));
+    }
+
+    //handle del tkb
+    public function handleDelTKBTeachers($id){
+        $teacher_number = Tkbofteachers::findOrFail($id)->teacher_number;
+        if(Tkbofteachers::findOrFail($id)->delete()){
+            return redirect()->route('admin.detail_infoTeacher', $teacher_number)->with('notification', 'Xoá lịch giảng dạy thành công');
+        }
+        else {
+            abort(404);
+        }
+    }
+
     //view list classes
     public function viewListClasses(Classes $class){
         $infoClasses = $class->getAllDataClasses();
@@ -150,6 +233,14 @@ class AdminController extends Controller
         return view('master.homePage.admin-homePage.add_class',$data);
     }
 
+    //view edit class
+    public function viewEditClass($class_id , Rooms $room){
+        $data = [];
+        $data['class'] = Classes::where('id', $class_id)->first();
+        $data['antiRoom'] = $room->listAntiRooms();
+        return view('master.homePage.admin-homePage.edit_class',$data);
+    }
+
     //view tkb of class
     public function viewTKBOfClass($class_name,Tkbofteachers $tkb,Weekdays $day,Tiethoc $tiet){
         $data = [];
@@ -160,10 +251,10 @@ class AdminController extends Controller
     }
 
     //view list students of class
-    public function listStudentsOfClass($class_name,InfoStudents $infoStudents){
+    public function listStudentsOfClass($class_id,InfoStudents $infoStudents){
         $data = [];
-        $data['class'] = $class_name;
-        $data['listStudents'] = $infoStudents->listInfoStudentsByClass($class_name);
+        $data['class'] = $data['class'] = Classes::where('id', $class_id)->first();
+        $data['listStudents'] = $infoStudents->listInfoStudentsByClass2($class_id);
         return view('master.homePage.admin-homePage.list_students_of_class',$data);
 
     }
@@ -179,6 +270,70 @@ class AdminController extends Controller
     public function viewAddRoom(){
         return view('master.homePage.admin-homePage.add_room');
     }
+
+    //view add subject
+    public function viewAddSubject(){
+        return view('master.homePage.admin-homePage.add_subject');
+    }
+
+    //handle add subject
+    public function handleAddSubject(Request $request){
+        $check = Subjects::where('subject_number', $request->subject_number)->first();
+        if($check){
+            return redirect()->back()->withInput()->with('notification', 'Mã môn học đã tồn tại');
+        }
+        Subjects::create([
+            'subject_number' => $request->subject_number,
+            'name' => $request->subject_name,
+            'lop_6' => $request->lop_6 ?? 0,
+            'lop_7' => $request->lop_7 ?? 0,
+            'lop_8' => $request->lop_8 ?? 0,
+            'lop_9' => $request->lop_9 ?? 0
+        ]);
+        return redirect()->route('admin.list_subjects')->with('notification', 'Thêm môn học thành công');
+    }
+
+    //handle del subject
+     public function handleDelSubject($subject_number){
+         $delSubject = Subjects::where('subject_number', $subject_number)->delete();
+         if($delSubject){
+            return redirect()->route('admin.list_subjects')->with('notification', 'Xoá môn học thành công');
+         }
+         else{
+             abort(404);
+         }
+    }
+
+    //view edit subject
+    public function viewEditSubject($subject_id){
+        $subject = Subjects::where('id', $subject_id)->first();
+        return view('master.homePage.admin-homePage.edit_subject', compact('subject'));
+    }
+
+    //handle edit subject
+    public function handleEditSubject(Request $request, $subject_id){
+        $oldSubject = Subjects::find($subject_id);
+        if($request->subject_number != $oldSubject->subject_number){
+            $check = Subjects::where('subject_number', $request->subject_number)->first();
+            if($check){
+                return redirect()->back()->withInput()->with('notification', 'Mã môn học đã tồn tại');
+            }
+        }
+        $updateSubject = Subjects::where('id', $subject_id)->update([
+            'subject_number' => $request->subject_number,
+            'name' => $request->subject_name,
+            'lop_6' => $request->lop_6 ?? 0,
+            'lop_7' => $request->lop_7 ?? 0,
+            'lop_8' => $request->lop_8 ?? 0,
+            'lop_9' => $request->lop_9 ?? 0
+        ]);
+        if($updateSubject){
+           return redirect()->route('admin.list_subjects')->with('notification', 'Cập nhật môn học thành công');
+        }
+        else{
+            abort(404);
+        }
+   }
 
     //view list subjects
     public function viewListSubjects(Subjects $subject){
@@ -494,7 +649,7 @@ class AdminController extends Controller
 
     }
 
-    public function HandleAddTKBTeachers($teacher_number,StoreAddTKBTeachers $request,InfoTeachers $infoTeachers,Tkbofteachers $tkb){
+    public function handleAddTKBTeachers($teacher_number,StoreAddTKBTeachers $request,InfoTeachers $infoTeachers,Tkbofteachers $tkb){
         $info = $infoTeachers->checkAddInfoTeachers($teacher_number);
         if($info){
             $class = $request->class;
@@ -507,6 +662,17 @@ class AdminController extends Controller
                 $weekday += 1;
                 return redirect()->back()->with('error',"Tiết học ".$tiethoc." vào thứ ".$weekday." của lớp ".$class." đã tồn tại.Vui lòng nhập lại");
             }
+
+            $checkTKBTeacher = Tkbofteachers::where([
+                                'teacher_number' => $teacher_number,
+                                'weekdays_id' =>  $weekday,
+                                'tiethoc_id' => $tiethoc
+                                ])->first();
+            if($checkTKBTeacher){
+                $weekday += 1;
+                return redirect()->back()->with('error',"Tiết học ".$tiethoc." vào thứ ".$weekday." của giáo viên đã tồn tại.Vui lòng nhập lại");
+            }
+
             $dataOfTKBTeacher = [
                 'teacher_number' => $teacher_number,
                 'class' => $class,
@@ -538,7 +704,7 @@ class AdminController extends Controller
             'class_name' => $class_name,
             'class_id' => $class_id,
             'room_id' => $room_id,
-            'created_at' => date('Y-m-d H:i:s')
+            // 'created_at' => date('Y-m-d H:i:s')
         ];
 
         $checkInsertClass = DB::table('classes')->insert($dataInsert);
@@ -550,6 +716,28 @@ class AdminController extends Controller
         else{
             return back();
         }
+    }
+
+    //handle edit class
+    public function handleEditClass(StoreAddClasses $request, Classes $class) {
+        $check = $class->checkClassName($request->class_name);
+        if($check && $check['class_name'] !== $request->class_name){
+            return back()->withInput()->with('notification','Tên lớp đã tồn tại');
+        }
+        else {
+            Classes::where('id', $request->id)->update([
+                'class_name' => $request->class_name,
+                'class_id' => $request->class_id,
+                'room_id' => $request->room_id
+            ]);
+            
+            Rooms::where('id', $check['room_id'])->update(['status' => 0]);
+
+            Rooms::where('id', $request->room_id)->update(['status' => 1]);
+
+            return redirect()->route('admin.list_classes')->with('notification','Đã sửa thành công một lớp học mới');
+        }
+
     }
 
     //handle del class
@@ -607,23 +795,207 @@ class AdminController extends Controller
     //handle del room
     public function handleDelRoom($room_name,Rooms $room,Classes $class){
         $checkRoom = $room->checkData($room_name);
-        $class_id = $room->getClassIdByRoom($room_name);
-        $class_id = $class_id['id'];
         if($checkRoom){
-            $checkStudent = $room->checkStudent($room_name);
-            if($checkStudent){
-                return redirect()->route('admin.list_rooms')->with('error','Phòng học có học sinh. Không thể xóa');
-            }
-            else{
+            $class_id = $room->getClassIdByRoom($room_name);
+            if($class_id){
+                $checkStudent = $room->checkStudent($room_name);
+                if($checkStudent){
+                    return redirect()->route('admin.list_rooms')->with('error','Phòng học có học sinh. Không thể xóa');
+                }
+                else{
+                    $checkDelRoom = $room->delRoom($room_name);
+                    $checkDelClass = $class->delClass($class_id['id']);
+                    if($checkDelRoom){
+                        return redirect()->route('admin.list_rooms')->with('notification','Đã xóa thành công');
+                    }
+                }
+            }else{
                 $checkDelRoom = $room->delRoom($room_name);
-                $checkDelClass = $class->delClass($class_id);
                 if($checkDelRoom){
                     return redirect()->route('admin.list_rooms')->with('notification','Đã xóa thành công');
                 }
             }
+            
         }
         else{
             return redirect()->route('admin.list_rooms')->with('error','Phòng học không tồn tại');
         }
+    }
+
+    // Export excel list students
+    public function studentsExport($class_id) 
+    {
+        $class = Classes::findOrFail($class_id);
+        $infoStudents = InfoStudents::where('class', $class_id)->get();
+        return Excel::download(new StudentsExport($infoStudents, $class), 'students_'.$class->class_name.'_'.date('d-m-Y').'.xlsx');
+    }
+
+    // Export excel list teachers
+    public function teachersExport(InfoTeachers $infoTeachers) 
+    {
+        $infoTeachers = $infoTeachers->listInfoTeachers(); 
+        return Excel::download(new TeachersExport($infoTeachers), 'teachers'.'_'.date('d-m-Y').'.xlsx');
+    }
+
+    // Export excel result summary
+    public function resultSummaryExport($class_id) 
+    {
+        $infoClass = Classes::where('id', $class_id)->first();
+        if ($infoClass->class_id == Classes::LOP6) {
+            $infoSubjects = Subjects::where('lop_6', $infoClass->class_id)->get();
+        }
+        else if ($infoClass->class_id == Classes::LOP7) {
+            $infoSubjects = Subjects::where('lop_7', $infoClass->class_id)->get();
+        }
+        else if ($infoClass->class_id == Classes::LOP8) {
+            $infoSubjects = Subjects::where('lop_8', $infoClass->class_id)->get();
+        }
+        else if ($infoClass->class_id == Classes::LOP9) {
+            $infoSubjects = Subjects::where('lop_9', $infoClass->class_id)->get();
+        }
+        else {
+            abort(404);
+        }
+        $infoPoint = InfoStudents::where('class', $class_id)->get();
+        foreach ($infoPoint as $val) {
+            $sumPoint = 0;
+            foreach ($val->pointAVG as $point) {
+                $sumPoint += $point->point_avg;
+            }
+            $pointAVG = $sumPoint/count($val->pointAVG); 
+            $val->point_avg = $pointAVG; 
+            $hocLuc = "";
+            if ($pointAVG >= Point_AVG::LOAI_GIOI) {
+                foreach ($val->pointAVG as $point) {
+                    if($point->point_avg <= 6.5){
+                        $hocLuc = "Khá";
+                        break;
+                    }
+                    if((strtoLower($point->name) == 'toán học' || strtoLower($point->name) == 'ngữ văn') && $val->pointAVG >= Point_AVG::LOAI_GIOI){
+                        $hocLuc = "Giỏi";
+                        break;
+                    }
+                }
+            }
+            else if ($pointAVG >= Point_AVG::LOAI_KHA) {
+                foreach ($val->pointAVG as $point) {
+                    if($point->point_avg <= 5){
+                        $hocLuc = "Trung bình";
+                        break;
+                    }
+                    if((strtoLower($point->name) == 'toán học' || strtoLower($point->name) == 'ngữ văn') && $val->pointAVG >= Point_AVG::LOAI_KHA){
+                        $hocLuc = "Khá";
+                        break;
+                    }
+                }
+            }
+            else if ($pointAVG >= Point_AVG::LOAI_TRUNG_BINH) {
+                foreach ($val->pointAVG as $point) {
+                    if($point->point_avg <= 3.5){
+                        $hocLuc = "Kém";
+                        break;
+                    }
+                    if((strtoLower($point->name) == 'toán học' || strtoLower($point->name) == 'ngữ văn') && $val->pointAVG >= Point_AVG::LOAI_TRUNG_BINH){
+                        $hocLuc = "Trung bình";
+                        break;
+                    }
+                }
+            }
+            else if ($pointAVG >= Point_AVG::LOAI_YEU) {
+                foreach ($val->pointAVG as $point) {
+                    if($point->point_avg <= 2.5){
+                        $hocLuc = "Kém";
+                        break;
+                    }
+                    $hocLuc = "Yếu";
+                }
+            }
+            else{
+                $hocLuc = "Kém"; 
+            }
+            $val->hocLuc = $hocLuc; 
+        }
+        return Excel::download(new ResultSummaryExport($infoClass, $infoSubjects, $infoPoint), 'student_result'.'_'.date('d-m-Y').'.xlsx');
+    }
+
+    //view student result summary
+    public function viewResultSummary($class_id) {
+        $infoClass = Classes::where('id', $class_id)->first();
+        if ($infoClass->class_id == Classes::LOP6) {
+            $infoSubjects = Subjects::where('lop_6', $infoClass->class_id)->get();
+        }
+        else if ($infoClass->class_id == Classes::LOP7) {
+            $infoSubjects = Subjects::where('lop_7', $infoClass->class_id)->get();
+        }
+        else if ($infoClass->class_id == Classes::LOP8) {
+            $infoSubjects = Subjects::where('lop_8', $infoClass->class_id)->get();
+        }
+        else if ($infoClass->class_id == Classes::LOP9) {
+            $infoSubjects = Subjects::where('lop_9', $infoClass->class_id)->get();
+        }
+        else {
+            abort(404);
+        }
+        $infoPoint = InfoStudents::where('class', $class_id)->get();
+        foreach ($infoPoint as $val) {
+            $sumPoint = 0;
+            foreach ($val->pointAVG as $point) {
+                $sumPoint += $point->point_avg;
+            }
+            $pointAVG = $sumPoint/count($val->pointAVG); 
+            $val->point_avg = $pointAVG; 
+            $hocLuc = "";
+            if ($pointAVG >= Point_AVG::LOAI_GIOI) {
+                foreach ($val->pointAVG as $point) {
+                    if($point->point_avg <= 6.5){
+                        $hocLuc = "Khá";
+                        break;
+                    }
+                    if((strtoLower($point->name) == 'toán học' || strtoLower($point->name) == 'ngữ văn') && $val->pointAVG >= Point_AVG::LOAI_GIOI){
+                        $hocLuc = "Giỏi";
+                        break;
+                    }
+                }
+            }
+            else if ($pointAVG >= Point_AVG::LOAI_KHA) {
+                foreach ($val->pointAVG as $point) {
+                    if($point->point_avg <= 5){
+                        $hocLuc = "Trung bình";
+                        break;
+                    }
+                    if((strtoLower($point->name) == 'toán học' || strtoLower($point->name) == 'ngữ văn') && $val->pointAVG >= Point_AVG::LOAI_KHA){
+                        $hocLuc = "Khá";
+                        break;
+                    }
+                }
+            }
+            else if ($pointAVG >= Point_AVG::LOAI_TRUNG_BINH) {
+                foreach ($val->pointAVG as $point) {
+                    if($point->point_avg <= 3.5){
+                        $hocLuc = "Kém";
+                        break;
+                    }
+                    if((strtoLower($point->name) == 'toán học' || strtoLower($point->name) == 'ngữ văn') && $val->pointAVG >= Point_AVG::LOAI_TRUNG_BINH){
+                        $hocLuc = "Trung bình";
+                        break;
+                    }
+                }
+            }
+            else if ($pointAVG >= Point_AVG::LOAI_YEU) {
+                foreach ($val->pointAVG as $point) {
+                    if($point->point_avg <= 2.5){
+                        $hocLuc = "Kém";
+                        break;
+                    }
+                    $hocLuc = "Yếu";
+                }
+            }
+            else{
+                $hocLuc = "Kém"; 
+            }
+            $val->hocLuc = $hocLuc; 
+        }
+        return view('master.homePage.admin-homePage.result_summary', compact('infoClass', 'infoSubjects', 'infoPoint'));
+        
     }
 }

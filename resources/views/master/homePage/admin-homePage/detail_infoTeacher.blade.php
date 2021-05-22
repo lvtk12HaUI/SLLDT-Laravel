@@ -74,6 +74,9 @@
                                                         @foreach($InfoTkb as $key => $val3)
                                                              @if($val['id'] === $val3['tiethoc_id'] && $val2['id'] === $val3['weekdays_id'] )
                                                                 <span><b>{{ $val3['class'] }}</b></span>
+                                                                <a href="{{route('admin.handle_del_TKB_teacher', $val3['id'])}}" class="active" ui-toggle-class="" onclick="return del_TKB()">
+                                                                    <i class="fa fa-times text-danger text"></i>
+                                                                </a>
                                                              @endif
                                                         @endforeach
                                                     </td>
@@ -92,4 +95,13 @@
             </div>
         </section>
     </article>
+    @push('scripts')
+    <!-- Page level custom scripts -->
+    <script src="js/demo/datatables-demo.js"></script>  
+    <script type="text/javascript">
+      function del_TKB(){
+        return confirm("Bạn muốn xóa lịch giảng dạy");
+      }
+    </script>
+  @endpush
 @endsection

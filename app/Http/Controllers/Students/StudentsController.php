@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Students;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller; 
 use App\Models\{Accounts,InfoStudents,InfoTeachers,Classes,Subjects,Tkbofteachers,Weekdays,Tiethoc,TypeOfPoint,PointOfStudent,Point_AVG};
+use App\Http\Requests\StoreEditInfoStudent;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\Common\getTeacherNumber;
 
@@ -17,6 +18,30 @@ class StudentsController extends Controller
         $data = [];
         $data['infoStudent'] = $infoStudents->checkAddInfoStudents($student_number);
         return view('master.homePage.student-homePage.personal_infoStudent',$data);   
+    }
+
+    //view edit personal infostudent
+    public function viewEditPersonalInfoStudent(Request $request,InfoStudents $infoStudents){
+        $student_number = $request->session()->get('username');
+        $student_number = strtoupper($student_number);
+        $data = [];
+        $data['infoStudent'] = $infoStudents->checkAddInfoStudents($student_number);
+        return view('master.homePage.student-homePage.edit_personal_infoStudent',$data);   
+    }
+
+     //handle edit personal infostudent
+     public function handleEditPersonalInfoStudent(StoreEditInfoStudent $request){
+        $student_number = $request->session()->get('username');
+        InfoStudents::where('student_number', $student_number)
+                    ->update([
+                        'student_name' => $request->student_name,
+                        'birthday' => $request->birthday,
+                        'gender' => $request->gender,
+                        'phone' => $request->phone,
+                        'email' => $request->email,
+                        'address' => $request->address,
+                    ]);
+            return redirect()->route('student.personal_infoStudent',$student_number);   
     }
     
     //view result student
@@ -31,6 +56,64 @@ class StudentsController extends Controller
         $data['typeOfPoint'] = $type->getAllData();
         $data['point'] = $point->getPointByStudent($student_number);
         $data['pointAVG'] = $avg->getPointByStudent($student_number);
+        $infoPoint = InfoStudents::where('student_number', $student_number)->first();
+            $sumPoint = 0;
+            foreach ($infoPoint->pointAVG as $point) {
+                $sumPoint += $point->point_avg;
+            }
+            $pointAVG = $sumPoint/count($infoPoint->pointAVG); 
+            $infoPoint->point_avg = $pointAVG; 
+            $hocLuc = "";
+            if ($pointAVG >= Point_AVG::LOAI_GIOI) {
+                foreach ($infoPoint->pointAVG as $point) {
+                    if($point->point_avg <= 6.5){
+                        $hocLuc = "Khá";
+                        break;
+                    }
+                    if((strtoLower($point->name) == 'toán học' || strtoLower($point->name) == 'ngữ văn') && $val->pointAVG >= Point_AVG::LOAI_GIOI){
+                        $hocLuc = "Giỏi";
+                        break;
+                    }
+                }
+            }
+            else if ($pointAVG >= Point_AVG::LOAI_KHA) {
+                foreach ($infoPoint->pointAVG as $point) {
+                    if($point->point_avg <= 5){
+                        $hocLuc = "Trung bình";
+                        break;
+                    }
+                    if((strtoLower($point->name) == 'toán học' || strtoLower($point->name) == 'ngữ văn') && $val->pointAVG >= Point_AVG::LOAI_KHA){
+                        $hocLuc = "Khá";
+                        break;
+                    }
+                }
+            }
+            else if ($pointAVG >= Point_AVG::LOAI_TRUNG_BINH) {
+                foreach ($infoPoint->pointAVG as $point) {
+                    if($point->point_avg <= 3.5){
+                        $hocLuc = "Kém";
+                        break;
+                    }
+                    if((strtoLower($point->name) == 'toán học' || strtoLower($point->name) == 'ngữ văn') && $val->pointAVG >= Point_AVG::LOAI_TRUNG_BINH){
+                        $hocLuc = "Trung bình";
+                        break;
+                    }
+                }
+            }
+            else if ($pointAVG >= Point_AVG::LOAI_YEU) {
+                foreach ($infoPoint->pointAVG as $point) {
+                    if($point->point_avg <= 2.5){
+                        $hocLuc = "Kém";
+                        break;
+                    }
+                    $hocLuc = "Yếu";
+                }
+            }
+            else{
+                $hocLuc = "Kém"; 
+            }
+            $infoPoint->hocLuc = $hocLuc; 
+            $data['infoPoint'] = $infoPoint;
         return view('master.homePage.student-homePage.result_student',$data);
     }
 

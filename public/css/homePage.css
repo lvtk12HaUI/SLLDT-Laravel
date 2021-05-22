@@ -84,6 +84,10 @@ article section div div div ul li div a.text-decoration-none{
 	text-decoration: none;
 }
 
+.text-decoration-none{
+	text-decoration: none !important;
+}
+
 article section div div div ul li div a.text-decoration-none:hover{
 	text-decoration: none;
 }

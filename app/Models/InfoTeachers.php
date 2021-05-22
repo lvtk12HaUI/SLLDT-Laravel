@@ -80,10 +80,10 @@ class InfoTeachers extends Model
         return $subject;
     }
 
-    public function listInfoTeachers($keyword){
+    public function listInfoTeachers($keyword=null){
         $result = [];
         $data = InfoTeachers::select('infoteachers.teacher_number','infoteachers.teacher_name','infoteachers.birthday','infoteachers.email',
-                                    'infoteachers.phone','infoteachers.gender','infoteachers.address','subjects.name')
+                                    'infoteachers.phone','infoteachers.gender','infoteachers.class','infoteachers.address','subjects.name')
                         ->join('subjects','infoteachers.subject_number','=','subjects.subject_number') 
                         ->where(function($query) use ($keyword){
                              $query->where('infoteachers.teacher_number','LIKE',"%{$keyword}%");

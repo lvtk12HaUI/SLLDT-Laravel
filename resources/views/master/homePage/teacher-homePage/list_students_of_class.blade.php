@@ -8,7 +8,8 @@
                     <div class="card sameheight-item items" data-exclude="xs,sm,lg">
                         <div class="card-header bordered">
                             <div class="header-block">
-                                <h3 class="title font-weight-bold">Lớp: {{ $class }}</h3>
+                                <h3 class="title font-weight-bold">Lớp: {{ $class->class_name }}</h3>
+                                <a href="{{ route('teacher.studentsExport', $class->id) }}" class="btn btn-primary btn-sm"> Xuất file excel danh sách học sinh </a>
                             </div>
                         </div>
                         <ul class="item-list striped">

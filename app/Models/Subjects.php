@@ -8,10 +8,15 @@ use Illuminate\Support\Facades\DB;
 class Subjects extends Model
 {
     protected $table = 'subjects';
+    protected $fillable = [
+        'subject_number','name','lop_6','lop_7','lop_8','lop_9'
+    ];
+
+    public $timestamps = false;
 
     public function getAllDataSubjects(){
         $result = [];
-        $data = Subjects::select('subject_number','name','lop_6','lop_7','lop_8','lop_9')
+        $data = Subjects::select('id','subject_number','name','lop_6','lop_7','lop_8','lop_9')
                     ->get();
         if($data){
             $result = $data->toArray();

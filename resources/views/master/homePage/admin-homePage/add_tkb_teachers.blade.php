@@ -31,7 +31,7 @@
                             <label class="control-label">Lớp giảng dạy</label>
                             <div class="rows form-group">
                                 <select name="class" class="form-control col-md-2 col-lg-2 col-xl-2">
-                                <option value="" selected="selected">Lớp học</option>
+                                    <option value="" selected="selected">Lớp học</option>
                                     @foreach ($classes as $key => $item)
                                         <option value="{{ $item['class_name'] }}" >{{ $item['class_name'] }}</option>
                                     @endforeach

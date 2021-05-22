@@ -10,7 +10,7 @@ class Tkbofteachers extends Model
 
     public function getDataTKBOfTeacher($teacher_number){
         $result = [];
-        $data = Tkbofteachers::select('Tkbofteachers.teacher_number','Tkbofteachers.class','Tkbofteachers.tiethoc_id','Tkbofteachers.weekdays_id','rooms.name as room_name')
+        $data = Tkbofteachers::select('Tkbofteachers.id','Tkbofteachers.teacher_number','Tkbofteachers.class','Tkbofteachers.tiethoc_id','Tkbofteachers.weekdays_id','rooms.name as room_name')
                         ->join('classes','Tkbofteachers.class','=','classes.class_name')
                         ->join('rooms','classes.room_id','=','rooms.id')
                         ->where('teacher_number',$teacher_number)

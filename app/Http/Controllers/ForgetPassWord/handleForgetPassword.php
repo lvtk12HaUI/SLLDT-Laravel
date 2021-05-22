@@ -30,7 +30,7 @@ class handleForgetPassword extends Controller
             //send sms
             // Your Account SID and Auth Token from twilio.com/console
             $account_sid = 'AC56d0e9245153f7275f29caa7ed7cfa93';
-            $auth_token = 'edee78e4250fa10016a8af89c8e2863e';
+            $auth_token = '97b4fbf03105cb9a224448afb6160603';
             // In production, these should be environment variables. E.g.:
             // $auth_token = $_ENV["TWILIO_ACCOUNT_SID"]
     

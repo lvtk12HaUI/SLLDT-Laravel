@@ -9,6 +9,11 @@ class Classes extends Model
 {
     protected $table = 'classes';
 
+    const LOP6 = 6;
+    const LOP7 = 7;
+    const LOP8 = 8;
+    const LOP9 = 9;
+
     public function getAllDataClasses(){
         $result = [];
         $data = Classes::select('classes.id','classes.class_name','rooms.name as room_name')
@@ -26,7 +31,7 @@ class Classes extends Model
     public function getDataInfoClass($class_name = []){
         $data = [];
         foreach($class_name as $key => $val){
-            $data[$key] = Classes::select('classes.class_name','rooms.name as room_name')
+            $data[$key] = Classes::select('classes.id','classes.class_name','rooms.name as room_name')
                             ->join('rooms','classes.room_id','=','rooms.id')
                             ->where('classes.class_name',$val)
                             ->first();
@@ -71,7 +76,7 @@ class Classes extends Model
 
     public function checkClassName($class_name){
         $result = [];
-        $data = Classes::select('class_name')
+        $data = Classes::select('class_name', 'room_id')
                     ->where('class_name',$class_name)
                     ->first();
         if($data){
@@ -95,5 +100,10 @@ class Classes extends Model
         Classes::where('id',$class_id)
                     ->delete();
         return true;
+    }
+
+    public function room()
+    {
+        return $this->belongsTo('App\Models\Rooms', 'room_id');
     }
 }

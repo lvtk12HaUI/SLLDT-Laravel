@@ -29,7 +29,10 @@
                             <td colspan="2" class="text-left pdt-20 pdb-20">Email: <b>{{ $infoTeacher['email'] }}</b></td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-left pdt-20">Địa chỉ: <b>{{ $infoTeacher['address'] }}</b></td>
+                            <td colspan="2" class="text-left pdt-20">Địa chỉ: <b>{{ $infoTeacher['address'] }}</b></td>
+                            <td colspan="2">
+                                <a href="{{ route('teacher.edit_personal_infoTeacher',Session::get('username')) }}" class="btn btn-primary btn-sm">Chỉnh sửa thông tin</a>
+                            </td>
                         </tr>
                     </table>
                 </div>

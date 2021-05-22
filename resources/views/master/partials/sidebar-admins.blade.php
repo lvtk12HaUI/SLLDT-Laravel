@@ -13,8 +13,8 @@
                 <p class="title-menu sidebar-menu title-category"><i class="far fa-calendar-alt"></i> Quản lý thông tin</p>
                 <li class="sub-item"><a href="{{ route('admin.list_teachers') }}">Danh sách giáo viên</a></li>
                 <li class="sub-item"><a href="{{ route('admin.list_students') }}">Danh sách học sinh</a></li>
-                <li class="sub-item"><a href="{{ route('admin.list_subjects') }}">Danh sách môn học</a></li>
                 <li class="sub-item"><a href="{{ route('admin.list_classes') }}">Danh sách lớp học</a></li>
+                <li class="sub-item"><a href="{{ route('admin.list_subjects') }}">Danh sách môn học</a></li>
                 <li class="sub-item"><a href="{{ route('admin.list_rooms') }}">Danh sách phòng học</a></li>
             </ul>
         </nav>

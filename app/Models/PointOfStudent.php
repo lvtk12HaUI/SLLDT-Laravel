@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class PointOfStudent extends Model
 {
     protected $table = 'pointofStudent';
+    protected $fillable = [
+        'student_number', 'subject_number', 'point_id', 'point', 'created_at', 'updated_at'
+    ];
 
     public function getPointByStudent($student_number){
         $result = [];

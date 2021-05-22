@@ -25,6 +25,16 @@ class CheckPointRule implements Rule
      */
     public function passes($attribute, $value)
     {
+        if(is_array($value)){
+            foreach($value as $val){
+                if($val['point'] !== ''){
+                    return preg_match("/^(([0-9]{1}?([.][5]{1})?)|((10){1}))$/", $val['point']);
+                }
+                else{
+                    return 1;
+                }    
+            }
+        }
         return preg_match("/^(([0-9]{1}?([.][5]{1})?)|((10){1}))$/", $value);
     }
 
